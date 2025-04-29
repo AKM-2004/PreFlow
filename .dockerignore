@@ -1,0 +1,55 @@
+# Node modules
+node_modules
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Git related
+.git
+.gitignore
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build files
+dist
+build
+
+# Docker related
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Temporary files
+.DS_Store
+*.tmp
+*.temp
+.cache
+
+# Coverage directory
+coverage
+
+# Testing
+/cypress
+/test
+/tests
+
+# Documentation
+README.md
+docs
