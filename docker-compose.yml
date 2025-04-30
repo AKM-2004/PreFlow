@@ -5,7 +5,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: preflow-app
     restart: unless-stopped
     ports:
       - "5000:5000"
@@ -19,8 +18,8 @@ services:
 
 networks:
   preflow-network:
-    driver: overlay   # Changed from 'bridge' to 'overlay'
-    attachable: true  # Makes the network attachable for containers in Swarm
+    driver: overlay   # Changed to 'overlay' for Docker Swarm compatibility
+    attachable: true  # Allows services to connect to the network
 
 volumes:
   app_data:
