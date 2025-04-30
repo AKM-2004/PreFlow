@@ -25,12 +25,19 @@ for /f "delims=" %%i in ('docker info ^| findstr /C:"Swarm: active"') do (
 REM Main deployment process
 echo Starting deployment process...
 
-REM Initialize swarm
-echo Initializing new swarm...
-docker swarm init
+REM Check if Swarm is initialized, and if not, initialize it
+for /f "delims=" %%i in ('docker info ^| findstr /C:"Swarm: inactive"') do (
+    echo Initializing new swarm...
+    docker swarm init
+    timeout /t 5 >nul
+)
 
 REM Deploy stack
 echo Deploying stack "%STACK_NAME%"...
 docker stack deploy -c "%COMPOSE_FILE%" "%STACK_NAME%"
+if %errorlevel% neq 0 (
+    echo ERROR: Stack deployment failed!
+    exit /b %errorlevel%
+)
 
 echo Deployment completed successfully!
