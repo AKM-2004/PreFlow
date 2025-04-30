@@ -2,16 +2,14 @@ version: '3.8'
 
 services:
   app:
-    image: your-username/your-image:tag  # ⚠️ Replace with your built image
-    deploy:                             # Swarm-specific configuration
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-        max_attempts: 3
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
     ports:
       - "5000:5000"
     volumes:
-      - uploads_volume:/app/uploads     # Better to use named volumes
+      - ./uploads:/app/uploads
       - app_data:/app/data
     environment:
       - NODE_ENV=production
@@ -20,8 +18,8 @@ services:
 
 networks:
   preflow-network:
-    driver: overlay
+    driver: overlay   # Changed from 'bridge' to 'overlay' for Docker Swarm compatibility
+    attachable: true  # Allows containers in Swarm mode to attach to this network
 
 volumes:
   app_data:
-  uploads_volume:                       # Added named volume for uploads
