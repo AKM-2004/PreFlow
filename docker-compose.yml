@@ -2,24 +2,21 @@ version: '3.8'
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: unless-stopped
+    image: adkmboi/preflow-app:latest  # Pre-built image
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
     ports:
       - "5000:5000"
     volumes:
-      - ./uploads:/app/uploads
-      - app_data:/app/data
-    environment:
-      - NODE_ENV=production
+      - app_data:/app/data              # Named volumes only
     networks:
       - preflow-network
 
 networks:
   preflow-network:
-    driver: overlay   # Changed from 'bridge' to 'overlay' for Docker Swarm compatibility
-    attachable: true  # Allows containers in Swarm mode to attach to this network
+    driver: overlay
 
 volumes:
   app_data:
