@@ -17,11 +17,10 @@ services:
     networks:
       - preflow-network
 
- 
 networks:
   preflow-network:
-    driver: bridge
+    driver: overlay   # Changed from 'bridge' to 'overlay'
+    attachable: true  # Makes the network attachable for containers in Swarm
 
 volumes:
   app_data:
-  # postgres_data:
