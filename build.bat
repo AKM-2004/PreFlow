@@ -3,7 +3,7 @@ setlocal EnableDelayedExpansion
 
 REM Variables
 set VERSION_FILE=version.txt
-set DOCKER_USERNAME=Adkmboi
+set DOCKER_USERNAME=adkmboi
 set CLIENT_IMAGE_NAME=preflow-app
 
 REM Ensure version file exists
