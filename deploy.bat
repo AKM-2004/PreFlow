@@ -1,36 +1,26 @@
 @echo off
-setlocal EnableDelayedExpansion
+setlocal enabledelayedexpansion
 
-REM Variables
-set STACK_NAME=my_stack
-set COMPOSE_FILE=docker-compose.yml
+REM Set your Docker Hub credentials and image name
+set DOCKER_USERNAME=adkmboi
+set IMAGE_NAME=preflow-app
+set STACK_NAME=my-app
 
-REM Function to clean up existing stack and swarm
-echo Cleaning up existing stack and swarm...
+REM Build the image
+echo Building Docker image...
+docker build -t %DOCKER_USERNAME%/%IMAGE_NAME% ./client
 
-REM Check and remove existing stack
-for /f "delims=" %%i in ('docker stack ls ^| findstr /C:"%STACK_NAME%"') do (
-    echo Removing existing stack...
-    docker stack rm %STACK_NAME%
-    timeout /t 10 >nul
-)
+REM Push the image to Docker Hub
+echo Pushing image to Docker Hub...
+docker push %DOCKER_USERNAME%/%IMAGE_NAME%
 
-REM Check if in swarm mode
-for /f "delims=" %%i in ('docker info ^| findstr /C:"Swarm: active"') do (
-    echo Leaving existing swarm...
-    docker swarm leave --force
-    timeout /t 5 >nul
-)
+REM Leave the swarm and reinitialize
+echo Leaving swarm and reinitializing...
+docker swarm leave --force
+docker swarm init 
 
-REM Main deployment process
-echo Starting deployment process...
-
-REM Initialize swarm
-echo Initializing new swarm...
-docker swarm init
-
-REM Deploy stack
-echo Deploying stack "%STACK_NAME%"...
-docker stack deploy -c "%COMPOSE_FILE%" "%STACK_NAME%"
-
-echo Deployment completed successfully!
+REM Deploy the stack
+echo Deploying stack %STACK_NAME%...
+docker stack deploy -c docker-compose.yml %STACK_NAME%
+docker stack ls
+echo Deployment completed!
