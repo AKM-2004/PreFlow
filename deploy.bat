@@ -4,7 +4,7 @@ REM Variables
 set STACK_NAME=my_stack
 set COMPOSE_FILE=docker-compose.yml
 set NETWORK_NAME=preflow-network
-set PREFIXED_NETWORK=%STACK_NAME%_%NETWORK_NAME%
+set PREFIXED_NETWORK=%NETWORK_NAME%
 
 REM Cleanup existing stack and swarm
 echo [1/5] Cleaning up existing stack and networks...
@@ -32,7 +32,7 @@ if %errorlevel% equ 0 (
 
 REM Cleanup networks
 echo Removing network %PREFIXED_NETWORK% if exists...
-docker network rm %PREFIXED_NETWORK% 2>nul
+docker network rm %PREFIXED_NETWORK% 
 REM Check if network still exists (might be in use)
 docker network ls | findstr /C:"%PREFIXED_NETWORK%" >nul
 if %errorlevel% equ 0 (
