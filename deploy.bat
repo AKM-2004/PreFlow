@@ -57,7 +57,7 @@ if %errorlevel% neq 0 (
 
 REM Deployment
 echo [4/5] Deploying stack %STACK_NAME%...
-docker stack deploy -c "%COMPOSE_FILE%" "%STACK_NAME%"
+docker stack deploy -c %COMPOSE_FILE% %STACK_NAME%
 if %errorlevel% neq 0 (
     echo ERROR: Stack deployment failed!
     exit /b 1
