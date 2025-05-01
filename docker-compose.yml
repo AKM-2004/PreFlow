@@ -2,21 +2,22 @@ version: '3.8'
 
 services:
   app:
-    image: adkmboi/preflow-app:latest  # Pre-built image
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
+    image: adkmboi/preflow-app:latest  # Build separately, don't build inside stack
     ports:
       - "5000:5000"
     volumes:
-      - app_data:/app/data              # Named volumes only
+      - uploads:/app/uploads
+      - app_data:/app/data
+    environment:
+      - NODE_ENV=production
     networks:
       - preflow-network
 
 networks:
   preflow-network:
     driver: overlay
+    attachable: true
 
 volumes:
+  uploads:
   app_data:
