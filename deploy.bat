@@ -4,7 +4,7 @@ setlocal EnableDelayedExpansion
 REM Variables
 set STACK_NAME=my_stack
 set COMPOSE_FILE=docker-compose.yml
-set NETWORK_NAME=%STACK_NAME%_preflow-network
+set NETWORK_NAME=preflow-network
 
 REM Cleanup existing stack and swarm
 echo [1/5] Cleaning up existing stack and networks...
