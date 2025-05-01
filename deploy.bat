@@ -4,7 +4,7 @@ REM Variables
 set STACK_NAME=my_stack
 set COMPOSE_FILE=docker-compose.yml
 set NETWORK_NAME=preflow-network
-set PREFIXED_NETWORK=%STACK_NAME%_%NETWORK_NAME%
+set PREFIXED_NETWORK=%NETWORK_NAME%
 
 REM Cleanup existing stack and swarm
 echo [1/5] Cleaning up existing stack and networks...
