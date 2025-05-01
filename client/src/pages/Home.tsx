@@ -163,7 +163,7 @@ export default function Home() {
         <section className="max-w-7xl mx-auto mb-20 text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 animate-float">
             <span className="text-gradient">
-              Intelligent  
+              Intelligent Data Preprocessing  
             </span>
           </h1>
           <p className="text-xl text-gray-300 mb-10 max-w-3xl mx-auto">
