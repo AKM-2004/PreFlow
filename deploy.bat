@@ -32,7 +32,7 @@ if %errorlevel% equ 0 (
 
 REM Cleanup networks
 echo Removing network %PREFIXED_NETWORK% if exists...
-docker network rm %PREFIXED_NETWORK% 
+docker network rm %PREFIXED_NETWORK% 2>nul
 REM Check if network still exists (might be in use)
 docker network ls | findstr /C:"%PREFIXED_NETWORK%" >nul
 if %errorlevel% equ 0 (
