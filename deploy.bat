@@ -1,18 +1,15 @@
 @echo off
 setlocal EnableDelayedExpansion
-
-REM ===== Variables =====
+REM Variables
 set STACK_NAME=my_stack
 set COMPOSE_FILE=docker-compose.yml
-set NETWORK_NAME=my_stack_preflow-network
+set NETWORK_NAME=preflow-network
+set PREFIXED_NETWORK=%STACK_NAME%_%NETWORK_NAME%
 
-REM ===== Debug Information =====
-echo [DEBUG] Current Docker networks:
-docker network ls
-echo.
-
-REM ===== Step 1: Remove existing stack =====
-echo [1/6] Checking for existing stack...
+REM Cleanup existing stack and swarm
+echo [1/5] Cleaning up existing stack and networks...
+REM Remove stack with retry logic
+echo Checking for existing stack...
 docker stack ls | findstr /C:"%STACK_NAME%" >nul
 if %errorlevel% equ 0 (
     echo Removing stack %STACK_NAME%...
@@ -24,82 +21,58 @@ if %errorlevel% equ 0 (
     docker stack ls | findstr /C:"%STACK_NAME%" >nul
     if %errorlevel% equ 0 (
         if !counter! lss 6 (
-            echo Waiting for stack removal... !counter!/6
             timeout /t 5 >nul
             set /a counter+=1
             goto retry_stack_removal
         )
-        echo WARNING: Stack removal is taking longer than expected. Continuing anyway.
-    ) else (
-        echo Stack %STACK_NAME% successfully removed.
+        echo ERROR: Failed to remove stack after 30 seconds
+        exit /b 1
     )
-) else (
-    echo No existing stack named %STACK_NAME% found.
 )
-echo.
 
-REM ===== Step 2: Clean up resources =====
-echo [2/6] Cleaning up Docker resources...
-echo Pruning containers...
-docker container prune -f
-echo Pruning networks...
+REM Cleanup networks
+echo Removing network %PREFIXED_NETWORK% if exists...
+docker network rm %PREFIXED_NETWORK% 2>nul
+REM Check if network still exists (might be in use)
+docker network ls | findstr /C:"%PREFIXED_NETWORK%" >nul
+if %errorlevel% equ 0 (
+    echo WARNING: Network %PREFIXED_NETWORK% still exists and may be in use.
+    echo Will attempt to prune unused networks...
+)
+echo Pruning unused networks...
 docker network prune -f
 
-REM Force remove any network with our target name
-echo Attempting to remove network %NETWORK_NAME% if it exists...
-docker network rm %NETWORK_NAME% 2>nul
-echo.
-
-REM ===== Step 3: Check swarm status =====
-echo [3/6] Checking swarm status...
+REM Swarm management
+echo [2/5] Managing swarm state...
+REM Check and leave swarm if active
 docker info --format "{{.Swarm.LocalNodeState}}" | findstr "active" >nul
 if %errorlevel% equ 0 (
-    echo Swarm is already active.
-    echo Leaving existing swarm to start fresh...
+    echo Leaving existing swarm...
     docker swarm leave --force
     timeout /t 5 >nul
-) else (
-    echo No active swarm found.
 )
-echo.
 
-REM ===== Step 4: Initialize new swarm =====
-echo [4/6] Initializing new swarm...
+echo [3/5] Initializing new swarm...
 docker swarm init --advertise-addr 127.0.0.1
 if %errorlevel% neq 0 (
     echo ERROR: Swarm initialization failed
     exit /b 1
 )
-echo.
 
-REM ===== Step 5: Create network explicitly =====
-echo [5/6] Creating overlay network explicitly...
-echo Creating network %NETWORK_NAME% as overlay network...
-docker network create --driver overlay --attachable %NETWORK_NAME%
-if %errorlevel% neq 0 (
-    echo ERROR: Failed to create network %NETWORK_NAME%
-    echo Current networks:
-    docker network ls
-    exit /b 1
-)
-echo Network created successfully.
-echo Current networks:
-docker network ls
-echo.
+REM Create required network before deployment
+echo [4/5] Creating required network...
+REM Skip manual network creation - let Docker Swarm handle it
+REM Docker will create the network during stack deployment
 
-REM ===== Step 6: Deploy stack =====
-echo [6/6] Deploying stack %STACK_NAME%...
-echo Running: docker stack deploy -c "%COMPOSE_FILE%" "%STACK_NAME%"
+REM Deployment
+echo [5/5] Deploying stack %STACK_NAME%...
 docker stack deploy -c "%COMPOSE_FILE%" "%STACK_NAME%"
 if %errorlevel% neq 0 (
     echo ERROR: Stack deployment failed!
-    echo Current networks:
-    docker network ls
     exit /b 1
 )
 
-REM ===== Final verification =====
-echo Verifying services...
+echo [6/6] Verifying services...
 timeout /t 5 >nul
 docker service ls | findstr /C:"%STACK_NAME%"
 if %errorlevel% neq 0 (
@@ -107,8 +80,5 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo Stack deployed successfully!
-echo Current Docker networks:
-docker network ls
-
+echo Deployment completed successfully!
 exit /b 0
