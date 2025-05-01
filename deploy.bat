@@ -4,6 +4,7 @@ REM Variables
 set STACK_NAME=my_stack
 set COMPOSE_FILE=docker-compose.yml
 set NETWORK_NAME=preflow-network
+set PREFIXED_NETWORK=%STACK_NAME%_%NETWORK_NAME%
 
 REM Cleanup existing stack and swarm
 echo [1/5] Cleaning up existing stack and networks...
@@ -30,8 +31,14 @@ if %errorlevel% equ 0 (
 )
 
 REM Cleanup networks
-echo Removing network %NETWORK_NAME% if exists...
-docker network rm %NETWORK_NAME% 2>nul
+echo Removing network %PREFIXED_NETWORK% if exists...
+docker network rm %PREFIXED_NETWORK% 2>nul
+REM Check if network still exists (might be in use)
+docker network ls | findstr /C:"%PREFIXED_NETWORK%" >nul
+if %errorlevel% equ 0 (
+    echo WARNING: Network %PREFIXED_NETWORK% still exists and may be in use.
+    echo Will attempt to prune unused networks...
+)
 echo Pruning unused networks...
 docker network prune -f
 
@@ -54,13 +61,8 @@ if %errorlevel% neq 0 (
 
 REM Create required network before deployment
 echo [4/5] Creating required network...
-REM When using stack deploy, Docker prefixes the network name with the stack name
-REM So the actual network name will be my_stack_preflow-network
-docker network create --driver overlay %STACK_NAME%_%NETWORK_NAME%
-if %errorlevel% neq 0 (
-    echo WARNING: Network creation returned non-zero exit code, may already exist
-    REM Continue anyway as the network might already exist
-)
+REM Skip manual network creation - let Docker Swarm handle it
+REM Docker will create the network during stack deployment
 
 REM Deployment
 echo [5/5] Deploying stack %STACK_NAME%...
